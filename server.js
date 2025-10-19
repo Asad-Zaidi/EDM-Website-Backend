@@ -1,35 +1,3 @@
-// import express from "express";
-// import mongoose from "mongoose";
-// import dotenv from "dotenv";
-// import cors from "cors";
-// import productRoutes from "./routes/productRoutes.js"; // ✅ Import routes
-
-// dotenv.config();
-
-// const app = express();
-
-// // Middleware
-// app.use(cors());
-// app.use(express.json());
-
-// // MongoDB connection
-// mongoose
-//     .connect(process.env.MONGODB_URI)
-//     .then(() => console.log("✅ MongoDB Connected Successfully"))
-//     .catch((err) => console.error("❌ DB connection error:", err));
-
-// // Default test route
-// app.get("/", (req, res) => {
-//     res.json({ message: "✅ Backend is running successfully!" });
-// });
-
-// // ✅ Register product routes
-// app.use("/api/products", productRoutes);
-
-// // Server listen
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -37,14 +5,15 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 app.use(cors());
-app.use(express.json()); // parse JSON bodies
+app.use(express.json());
 
-// routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use("/api/contact", contactRoutes);
 
 const PORT = process.env.PORT || 5000;
 

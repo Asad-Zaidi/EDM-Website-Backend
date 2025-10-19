@@ -1,13 +1,35 @@
+// const mongoose = require('mongoose');
+
+// const ProductSchema = new mongoose.Schema({
+//     name: { type: String, required: true },
+//     priceMonthly: { type: Number, required: true }, 
+//     priceYearly: { type: Number }, 
+//     description: { type: String },
+//     category: { type: String },
+//     imageUrl: { type: String },
+//     cloudinaryPublicId: { type: String }, 
+//     createdAt: { type: Date, default: Date.now }
+// });
+
+// module.exports = mongoose.model('Product', ProductSchema);
+
 const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema({
     name: { type: String, required: true },
-    priceMonthly: { type: Number, required: true }, // base monthly price (in PKR or chosen currency)
-    priceYearly: { type: Number }, // optional pre-calculated yearly price
     description: { type: String },
-    category: { type: String },
+    category: { type: String, required: true },
+
+    // 💰 Pricing fields (all optional so admin can choose what to add)
+    priceMonthly: { type: Number },
+    priceYearly: { type: Number },
+    priceShared: { type: Number },
+    pricePrivate: { type: Number },
+
+    // 📸 Image fields
     imageUrl: { type: String },
-    cloudinaryPublicId: { type: String }, // to remove from Cloudinary if deleting
+    cloudinaryPublicId: { type: String },
+
     createdAt: { type: Date, default: Date.now }
 });
 
