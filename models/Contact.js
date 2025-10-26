@@ -1,16 +1,20 @@
+// backend/models/Contact.js
 const mongoose = require("mongoose");
 
 const ContactSchema = new mongoose.Schema({
-    companyName: { type: String, required: true },
-    address: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, required: true },
-    message: { type: String },
-    facebook: { type: String },
-    instagram: { type: String },
-    twitter: { type: String },
-    mapEmbedUrl: { type: String },
-    updatedAt: { type: Date, default: Date.now }
+    companyName: { type: String, required: true, default: "My Company" },
+    whatsapp: { type: String, required: true, default: "" },
+    email: { type: String, required: true, default: "" },
+    social: {
+        facebook: { type: String, default: "" },
+        instagram: { type: String, default: "" },
+        youtube: { type: String, default: "" },
+        tiktok: { type: String, default: "" },
+        x: { type: String, default: "" } // X/Twitter
+    },
+    // flexible extraFields: admin can add more keys (stored as object)
+    extraFields: { type: Map, of: String, default: {} },
+    updatedAt: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("Contact", ContactSchema);

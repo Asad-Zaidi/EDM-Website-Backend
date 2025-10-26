@@ -122,16 +122,32 @@ const listProducts = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+// const getProduct = async (req, res) => {
+//     try {
+//         const id = req.params.id;
+//         const product = await Product.findById(id);
+//         if (!product) return res.status(404).json({ message: "Product not found" });
+//         res.json(product);
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ message: err.message });
+//     }
+// };
+
 const getProduct = async (req, res) => {
     try {
-        const id = req.params.id;
-        const product = await Product.findById(id);
-        if (!product) return res.status(404).json({ message: "Product not found" });
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: "Not found" });
+
+        // ✅ Increment view count each time product is viewed
+        product.viewCount = (product.viewCount || 0) + 1;
+        await product.save();
+
         res.json(product);
     } catch (err) {
-        console.error(err);
         res.status(500).json({ message: err.message });
     }
 };
+
 
 module.exports = { createProduct, updateProduct, deleteProduct, listProducts, getProduct };
