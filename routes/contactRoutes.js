@@ -1,26 +1,9 @@
-// backend/routes/contactRoutes.js
-const express = require("express");
+import express from "express";
+import { getContact, updateContact } from "../controllers/contactController.js";
+
 const router = express.Router();
 
-const {
-    getContact,
-    updateContact,
-    submitMessage,
-    listMessages,
-    setMessageHandled,
-} = require("../controllers/contactController");
+router.get("/", getContact); // public
+router.put("/", updateContact); // admin edit (secure later)
 
-// middlewares (you have these already in your project)
-const auth = require("../middlewares/authMiddleware"); // must exist
-const adminOnly = require("../middlewares/adminMiddleware"); // must exist
-
-// Public
-router.get("/", getContact);
-router.post("/message", submitMessage);
-
-// Admin protected
-router.put("/", auth, adminOnly, updateContact);
-router.get("/messages", auth, adminOnly, listMessages);
-router.put("/messages/:id/handled", auth, adminOnly, setMessageHandled);
-
-module.exports = router;
+export default router;

@@ -5,11 +5,13 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
-const contactRoutes = require("./routes/contactRoutes");
+// const contactRoutes = require("./routes/contactRoutes");
+// const messageRoutes = require("./routes/messageRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const reviewRoutes = require('./routes/reviewRoutes');
 const bannerRoutes = require("./routes/bannerRoutes");
 const visitTracker = require('./middlewares/visitTracker');
+const categoryRoutes = require("./routes/categoryRoutes");
 
 const app = express();
 app.use(cors());
@@ -20,9 +22,11 @@ app.use(visitTracker);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/contact", contactRoutes);
+// app.use("/api/contact", contactRoutes);
+// app.use("/api/messages", messageRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/categories", categoryRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -1,63 +1,140 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const Review = require("../models/Review");
+const Product = require("../models/Product");
 
-// Create new review
-const addReview = async (req, res) => {
+exports.addReview = async (req, res) => {
     try {
-        const { productId, username, rating, comment } = req.body;
+        const { productId, name, comment, rating } = req.body;
 
-        if (!productId || !rating) {
-            return res.status(400).json({ message: "Product ID and rating are required" });
+        if (!productId || !name || !comment || !rating) {
+            return res.status(400).json({ message: "All fields are required" });
         }
 
-        const review = await Review.create({ productId, username, rating, comment });
-        res.status(201).json(review);
+        
+        const newReview = new Review({ productId, name, comment, rating });
+        await newReview.save();
+
+        
+        const reviews = await Review.find({ productId });
+        const avgRating =
+            reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+        
+        await Product.findByIdAndUpdate(productId, {
+            avgRating,
+            totalReviews: reviews.length,
+        });
+
+        res.status(201).json(newReview); 
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("Error adding review:", err);
+        res.status(500).json({ message: "Error adding review" });
     }
 };
 
-// Get all reviews for a product
-const getReviewsByProduct = async (req, res) => {
+exports.getReviewsByProduct = async (req, res) => {
     try {
         const { productId } = req.params;
         const reviews = await Review.find({ productId }).sort({ createdAt: -1 });
         res.json(reviews);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: "Error fetching reviews" });
     }
 };
 
-const getReviewStats = async (req, res) => {
-    try {
-        // 1️⃣ Group reviews by product
-        const productStats = await Review.aggregate([
-            {
-                $group: {
-                    _id: "$productId",
-                    avgRating: { $avg: "$rating" },
-                    totalReviews: { $sum: 1 },
-                },
-            },
-            {
-                $lookup: {
-                    from: "products",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "product",
-                },
-            },
-            { $unwind: "$product" },
-            {
-                $project: {
-                    _id: 1,
-                    avgRating: { $round: ["$avgRating", 1] },
-                    totalReviews: 1,
-                    productName: "$product.name",
-                },
-            },
-        ]);
 
-        // 2️⃣ Get overall rating distribution (1–5 stars)
+
+
+
+
+
+
+
+
+exports.getReviewStats = async (req, res) => {
+    try {
+        
+        const productStats = await Product.find({}, "name avgRating totalReviews");
+
+        
         const distribution = await Review.aggregate([
             {
                 $group: {
@@ -70,8 +147,7 @@ const getReviewStats = async (req, res) => {
 
         res.json({ productStats, distribution });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error("Error fetching review stats:", err);
+        res.status(500).json({ message: "Error fetching review stats" });
     }
 };
-
-module.exports = { addReview, getReviewsByProduct, getReviewStats };

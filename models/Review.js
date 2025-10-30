@@ -6,7 +6,7 @@ const ReviewSchema = new mongoose.Schema({
         ref: "Product",
         required: true,
     },
-    username: {
+    name: {
         type: String,
         required: true,
         default: "Anonymous",
