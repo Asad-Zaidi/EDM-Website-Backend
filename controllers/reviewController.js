@@ -1,82 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const Review = require("../models/Review");
 const Product = require("../models/Product");
 
@@ -121,14 +42,6 @@ exports.getReviewsByProduct = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
 exports.getReviewStats = async (req, res) => {
     try {
         
@@ -149,5 +62,17 @@ exports.getReviewStats = async (req, res) => {
     } catch (err) {
         console.error("Error fetching review stats:", err);
         res.status(500).json({ message: "Error fetching review stats" });
+    }
+};
+
+exports.getReviewsByProductSlug = async (req, res) => {
+    try {
+        const product = await Product.findOne({ slug: req.params.slug });
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        const reviews = await Review.find({ productId: product._id }).sort({ createdAt: -1 });
+        res.json(reviews);
+    } catch (err) {
+        res.status(500).json({ message: "Error fetching reviews" });
     }
 };

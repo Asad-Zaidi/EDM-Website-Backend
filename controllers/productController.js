@@ -1,7 +1,6 @@
 const Product = require('../models/Product');
 const cloudinary = require('../utils/cloudinary');
 
-
 const createProduct = async (req, res) => {
     try {
         const {
@@ -16,7 +15,7 @@ const createProduct = async (req, res) => {
 
         let imageUrl = "", publicId = "";
 
-
+        // Upload image to Cloudinary if provided
         if (req.file) {
             console.log("🖼 Uploading image to Cloudinary...");
 
@@ -46,15 +45,15 @@ const createProduct = async (req, res) => {
             console.log("⚠️ No image file provided — skipping Cloudinary upload.");
         }
 
-
+        // Create the product
         const product = await Product.create({
             name,
             description,
             category,
-            priceMonthly: priceMonthly ? Number(priceMonthly) : undefined,
-            priceYearly: priceYearly ? Number(priceYearly) : undefined,
-            priceShared: priceShared ? Number(priceShared) : undefined,
-            pricePrivate: pricePrivate ? Number(pricePrivate) : undefined,
+            priceMonthly: priceMonthly != null ? Number(priceMonthly) : undefined,
+            priceYearly: priceYearly != null ? Number(priceYearly) : undefined,
+            priceShared: priceShared != null ? Number(priceShared) : undefined,
+            pricePrivate: pricePrivate != null ? Number(pricePrivate) : undefined,
             imageUrl,
             cloudinaryPublicId: publicId,
         });
@@ -68,16 +67,15 @@ const createProduct = async (req, res) => {
 };
 
 
-
 const updateProduct = async (req, res) => {
     try {
         const id = req.params.id;
         const product = await Product.findById(id);
         if (!product) return res.status(404).json({ message: "Product not found" });
 
-        let updates = req.body;
+        let updates = { ...req.body };
 
-
+        // Handle image upload to Cloudinary if provided
         if (req.file) {
             if (product.cloudinaryPublicId) {
                 await cloudinary.uploader.destroy(product.cloudinaryPublicId);
@@ -96,9 +94,9 @@ const updateProduct = async (req, res) => {
             updates.cloudinaryPublicId = result.public_id;
         }
 
-
+        // Convert price fields to Number if they are not null/undefined
         ["priceMonthly", "priceYearly", "priceShared", "pricePrivate"].forEach((key) => {
-            if (updates[key]) updates[key] = Number(updates[key]);
+            if (updates[key] != null) updates[key] = Number(updates[key]);
         });
 
         const updated = await Product.findByIdAndUpdate(id, updates, { new: true });
@@ -132,14 +130,25 @@ const listProducts = async (req, res) => {
     try {
         const products = await Product.find()
             .sort({ createdAt: -1 })
-            .select("name category priceMonthly imageUrl avgRating totalReviews");
-        res.json(products);
+            .select("name category priceMonthly priceYearly priceShared pricePrivate imageUrl avgRating totalReviews slug");
+
+        // Ensure all price fields are always defined
+        const response = products.map(product => ({
+            ...product._doc,
+            priceMonthly: product.priceMonthly != null ? product.priceMonthly : 0,
+            priceYearly: product.priceYearly != null ? product.priceYearly : 0,
+            priceShared: product.priceShared != null ? product.priceShared : 0,
+            pricePrivate: product.pricePrivate != null ? product.pricePrivate : 0,
+            avgRating: product.avgRating || 0,
+            totalReviews: product.totalReviews || 0,
+        }));
+
+        res.json(response);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: err.message });
     }
 };
-
 
 
 const getProduct = async (req, res) => {
@@ -152,7 +161,10 @@ const getProduct = async (req, res) => {
 
         const response = {
             ...product._doc,
-            price: product.priceMonthly || product.priceYearly || 0,
+            priceMonthly: product.priceMonthly != null ? product.priceMonthly : 0,
+            priceYearly: product.priceYearly != null ? product.priceYearly : 0,
+            priceShared: product.priceShared != null ? product.priceShared : 0,
+            pricePrivate: product.pricePrivate != null ? product.pricePrivate : 0,
             avgRating: product.avgRating || 0,
             totalReviews: product.totalReviews || 0,
         };
@@ -167,7 +179,7 @@ const getProduct = async (req, res) => {
 const getPopularProducts = async (req, res) => {
     try {
         const products = await Product.find()
-            .sort({ viewCount: -1 })
+            .sort({ avgRating: -1 })
             .limit(6);
         res.status(200).json(products);
     } catch (error) {
@@ -177,6 +189,31 @@ const getPopularProducts = async (req, res) => {
 };
 
 
+const getProductBySlug = async (req, res) => {
+    try {
+        const product = await Product.findOne({ slug: req.params.slug });
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        product.viewCount = (product.viewCount || 0) + 1;
+        await product.save();
+
+        const response = {
+            ...product._doc,
+            priceMonthly: product.priceMonthly != null ? product.priceMonthly : 0,
+            priceYearly: product.priceYearly != null ? product.priceYearly : 0,
+            priceShared: product.priceShared != null ? product.priceShared : 0,
+            pricePrivate: product.pricePrivate != null ? product.pricePrivate : 0,
+            avgRating: product.avgRating || 0,
+            totalReviews: product.totalReviews || 0,
+        };
+
+        res.json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports = {
     getPopularProducts,
     createProduct,
@@ -184,5 +221,5 @@ module.exports = {
     deleteProduct,
     listProducts,
     getProduct,
-
+    getProductBySlug
 };

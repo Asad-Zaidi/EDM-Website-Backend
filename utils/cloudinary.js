@@ -5,6 +5,6 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-console.log("✅ Cloudinary Connected:", process.env.CLOUDINARY_CLOUD_NAME);
+console.log("Cloudinary Connected:", process.env.CLOUDINARY_CLOUD_NAME);
 
 module.exports = cloudinary;
