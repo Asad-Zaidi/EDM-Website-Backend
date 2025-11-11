@@ -11,15 +11,17 @@ const ProductSchema = new mongoose.Schema({
     imageUrl: { type: String },
     cloudinaryPublicId: { type: String },
     viewCount: { type: Number, default: 0 },
-    avgRating: { type: Number, default: 0 }, 
-    totalReviews: { type: Number, default: 0 }, 
+    avgRating: { type: Number, default: 0 },
+    totalReviews: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
-    slug: { type: String, unique: true } 
+    slug: { type: String, unique: true }
 });
 
-ProductSchema.pre('save', function(next) {
-    if (this.isModified('name') || !this.slug) {
-        this.slug = this.name.toLowerCase().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '');
+ProductSchema.pre('save', function (next) {
+    if (this.isModified('name') || this.isModified('category') || !this.slug) {
+        const nameSlug = this.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+        const categorySlug = this.category.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+        this.slug = `${categorySlug}/${nameSlug}`;
     }
     next();
 });

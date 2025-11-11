@@ -99,7 +99,11 @@ const updateProduct = async (req, res) => {
             if (updates[key] != null) updates[key] = Number(updates[key]);
         });
 
-        const updated = await Product.findByIdAndUpdate(id, updates, { new: true });
+        // Apply updates to the document
+        Object.assign(product, updates);
+        
+        // Save to trigger the pre-save hook which regenerates the slug
+        const updated = await product.save();
         res.json(updated);
     } catch (err) {
         console.error(err);
